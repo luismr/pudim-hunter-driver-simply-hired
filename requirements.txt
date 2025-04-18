@@ -1,0 +1,5 @@
+pudim-hunter-driver-scraper
+pytest==7.4.3
+python-dotenv==1.0.0
+requests==2.31.0
+setuptools_scm==8.0.0  # For dynamic versioning from git tags 
