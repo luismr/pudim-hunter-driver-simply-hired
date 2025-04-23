@@ -35,3 +35,6 @@ coverage.xml
 # OS specific files
 .DS_Store
 Thumbs.db 
+
+# Version file
+_version.py
