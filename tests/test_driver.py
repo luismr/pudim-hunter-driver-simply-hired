@@ -5,6 +5,7 @@ from datetime import datetime
 from pudim_hunter_driver.models import JobQuery, Job
 from pudim_hunter_driver_simply_hired.driver import SimplyHiredScraperJobDriver
 
+import pytest
 import os
 
 # Skip all tests in this module if running in CI
