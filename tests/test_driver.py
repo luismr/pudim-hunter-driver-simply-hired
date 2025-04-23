@@ -5,6 +5,13 @@ from datetime import datetime
 from pudim_hunter_driver.models import JobQuery, Job
 from pudim_hunter_driver_simply_hired.driver import SimplyHiredScraperJobDriver
 
+import os
+
+# Skip all tests in this module if running in CI
+pytestmark = pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS") == "true",
+    reason="Phantom scraper tests are skipped in CI environment due to IP blocking"
+)
 
 def test_fetch_jobs_integration():
     """Test the complete job fetching process with real Simply Hired website"""

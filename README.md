@@ -1,7 +1,10 @@
 # pudim-hunter-driver-simply-hired
 
-![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
-![CI Status](https://img.shields.io/badge/CI-passing-brightgreen)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Pytest 7.4](https://img.shields.io/badge/pytest-7.4-brightgreen.svg)](https://docs.pytest.org/en/7.4.x/)
+[![CI](https://github.com/luismr/pudim-hunter-driver-simply-hired/actions/workflows/ci.yml/badge.svg)](https://github.com/luismr/pudim-hunter-driver-simply-hired/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/luismr/pudim-hunter-driver-simply-hired/branch/main/graph/badge.svg)](https://codecov.io/gh/luismr/pudim-hunter-driver-simply-hired)
+[![PyPI version](https://badge.fury.io/py/pudim-hunter-driver-simply-hired.svg)](https://pypi.org/project/pudim-hunter-driver-simply-hired/)
 
 A specialized Simply Hired job scraper package built on top of `pudim-hunter-driver`. This package provides a robust implementation for scraping job listings from Simply Hired while effectively avoiding bot detection mechanisms.
 
