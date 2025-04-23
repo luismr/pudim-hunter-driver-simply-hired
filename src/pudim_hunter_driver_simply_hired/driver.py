@@ -23,10 +23,12 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
 
     BASE_URL = "https://www.simplyhired.com/search?"
     SOURCE = "simplyhired"
+    MAX_PAGES = 2  # Maximum number of pages to scrape
 
     def __init__(self, headless: bool = True):
         super().__init__(headless=headless, scraper_type=ScraperType.PHANTOM)
         self.logger = logging.getLogger(__name__)
+        self.current_page = 1
 
     def extract_raw_job_data(self) -> Optional[Any]:
         """
@@ -40,7 +42,6 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
         except Exception as e:
             self.logger.error(f"Error extracting raw job data: {str(e)}")
             return None
-
 
     def transform_job(self, job_element: ElementHandle) -> Optional[Job]:
         """
@@ -86,24 +87,33 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
         """
         Get the next page url for the given page number
         """
+        # Check if we've reached the maximum number of pages
+        if self.current_page >= self.MAX_PAGES:
+            self.logger.info(f"Reached maximum page limit ({self.MAX_PAGES})")
+            return None
+
         next_page_button = self.scraper.page.query_selector(f"a[data-testid='paginationBlock{page}']")
 
         if next_page_button:
             next_page_url = next_page_button.get_attribute("href")
             if next_page_url:
-                print(f"➡️ Moving to page {page}: {next_page_url}")
+                self.logger.info(f"➡️ Moving to page {page}: {next_page_url}")
+                self.current_page += 1
                 return next_page_url
             else:
-                print("❌ No more pages available.")
+                self.logger.info("❌ No more pages available.")
                 return None
         else:
-            print("❌ No more pages available.")
+            self.logger.info("❌ No more pages available.")
             return None
 
     def build_search_url(self, query: JobQuery) -> str:
         """
         Build the search URL for the given query
         """
+        # Reset current page counter when starting a new search
+        self.current_page = 1
+        
         url = self.BASE_URL
 
         if query.keywords:
