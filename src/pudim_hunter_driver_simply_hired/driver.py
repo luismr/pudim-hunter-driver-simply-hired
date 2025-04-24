@@ -150,6 +150,7 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
                         job_card_element.click()
                     else:
                         self.logger.warning("Job card element not found; skipping description fetch.")
+                        
                 return Job(**job_data)
         except Exception as e:
             self.logger.error(f"Error scraping job: {str(e)}")
