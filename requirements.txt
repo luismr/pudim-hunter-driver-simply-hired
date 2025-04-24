@@ -1,4 +1,4 @@
-pudim-hunter-driver-scraper==0.0.17
+pudim-hunter-driver-scraper==1.0.0
 setuptools>=61.0.0
 pytest==7.4.3
 pytest-mock==3.12.0
