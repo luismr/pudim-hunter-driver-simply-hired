@@ -145,8 +145,11 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
                 # FIXME: this must be moved to fetch_job
                 if self.has_description_support_enabled():
                     # Click on card to open description
-                    self.scraper.page.click(selectors["job_card"])
-
+                    job_card_element = self.scraper.page.query_selector(selectors["job_card"])
+                    if job_card_element:
+                        job_card_element.click()
+                    else:
+                        self.logger.warning("Job card element not found; skipping description fetch.")
                 return Job(**job_data)
         except Exception as e:
             self.logger.error(f"Error scraping job: {str(e)}")
