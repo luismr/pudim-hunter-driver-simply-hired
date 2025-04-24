@@ -225,7 +225,7 @@ def test_pagination_limit(mock_driver, mock_query, mock_job_data):
             if mock_driver.current_page < MAX_PAGES:
                 mock_button = Mock()
                 mock_button.get_attribute.return_value = f"https://www.simplyhired.com/search?page={mock_driver.current_page + 1}"
-                return mock_button
+                mock_driver.current_page += 1  # Increment the current page
             return None
 
         # Set up the mock pagination behavior
