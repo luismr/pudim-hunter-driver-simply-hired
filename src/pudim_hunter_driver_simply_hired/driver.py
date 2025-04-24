@@ -7,7 +7,7 @@ from pudim_hunter_driver.models import JobQuery
 from pudim_hunter_driver_scraper.driver import ScraperJobDriver
 from pudim_hunter_driver_scraper.driver import ScraperType
 from pudim_hunter_driver.models import Job
-
+from pudim_hunter_driver.exceptions import DriverError
 from playwright.sync_api import ElementHandle
 from urllib.parse import quote_plus 
 from datetime import datetime
@@ -22,7 +22,6 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
 
     BASE_URL = "https://www.simplyhired.com/search?"
     SOURCE = "simplyhired"
-    MAX_PAGES = 2  # Maximum number of pages to scrape
 
     def __init__(self, headless: bool = True):
         super().__init__(headless=headless, scraper_type=ScraperType.PHANTOM)
@@ -35,7 +34,6 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
         """
         return {
             "job_list": "#job-list li",
-            "job_card": "[data-testid='searchSerpJob']",
             "job_title": "h2 a",
             "job_location": "[data-testid='searchSerpJobLocation']",
             "company_name": "[data-testid='companyName']",
@@ -48,12 +46,14 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
         }
 
 
-    def get_description(self) -> Optional[str]:
+    def get_description(self, job_element: ElementHandle) -> Optional[str]:
         """
         Get the job description from a job element
         """
         try:
-            description_element = self.scraper.page.query_selector(self.get_selectors()["description"])
+            self.click_job_title(job_element)
+
+            description_element = job_element.query_selector(self.get_selectors()["description"])
             description = description_element.inner_text() if description_element else None
 
             return description
@@ -61,7 +61,18 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
             self.logger.error(f"Error getting job description: {str(e)}")
             return None
 
-    def get_qualifications(self) -> Optional[List[str]]:
+    def click_job_title(self, job_element: ElementHandle):
+        """Click on a job card."""
+        page_element = self.scraper.page
+        job_title_element = job_element.query_selector(self.get_selectors()["job_title"])
+        
+        if job_title_element:
+            job_title_element.click()
+            page_element.wait_for_selector(self.get_selectors()["description"], timeout=10000)
+        else:
+            raise DriverError("Job title element not found; skipping description fetch.")
+
+    def get_qualifications(self, job_element: ElementHandle) -> Optional[List[str]]:
         """
         Get the job qualifications from a job element
         Note: SimplyHired doesn't have a separate qualifications section in the job list view
@@ -69,7 +80,7 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
         try:
             selectors = self.get_selectors()
             
-            qualifications_elements = self.scraper.page.query_selector_all(selectors["qualifications"])
+            qualifications_elements = job_element.query_selector_all(selectors["qualifications"])
 
             qualifications = []
             for qualification_element in qualifications_elements:
@@ -141,15 +152,6 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
                     "posted_at": datetime.now(),
                     "source": self.SOURCE
                 }
-
-                # FIXME: this must be moved to fetch_job
-                if self.has_description_support_enabled():
-                    # Click on card to open description
-                    job_card_element = self.scraper.page.query_selector(selectors["job_card"])
-                    if job_card_element:
-                        job_card_element.click()
-                    else:
-                        self.logger.warning("Job card element not found; skipping description fetch.")
                         
                 return Job(**job_data)
         except Exception as e:
@@ -160,11 +162,6 @@ class SimplyHiredScraperJobDriver(ScraperJobDriver):
         """
         Get the next page url for the given page number
         """
-        # Check if we've reached the maximum number of pages
-        if self.current_page >= self.MAX_PAGES:
-            self.logger.info(f"Reached maximum page limit ({self.MAX_PAGES})")
-            return None
-
         selectors = self.get_selectors()
         next_page_button = self.scraper.page.query_selector(selectors["next_page_button"].format(next_page_number=page))
 
