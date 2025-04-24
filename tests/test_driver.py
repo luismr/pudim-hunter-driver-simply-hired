@@ -37,7 +37,7 @@ def test_fetch_jobs_integration():
         assert isinstance(job.title, str) and len(job.title) > 0, "Job should have a title"
         assert isinstance(job.company, str) and len(job.company) > 0, "Job should have a company"
         assert isinstance(job.location, str) and len(job.location) > 0, "Job should have a location"
-        assert isinstance(job.description, str) and len(job.description) > 0, "Job should have a description"
+        assert isinstance(job.summary, str) and len(job.summary) > 0, "Job should have a summary"
         assert isinstance(job.url, str) and job.url.startswith("https://www.simplyhired.com/"), "Job should have valid Simply Hired URL"
         assert isinstance(job.remote, bool), "Remote should be a boolean"
         assert isinstance(job.posted_at, datetime), "Posted date should be a datetime"

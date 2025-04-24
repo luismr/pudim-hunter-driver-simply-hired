@@ -19,7 +19,7 @@ def mock_job_data() -> List[Dict[str, Any]]:
             "company": "Tech Corp",
             "location": "San Francisco, CA",
             "url": "/job/123",
-            "description": "Looking for a software engineer...",
+            "summary": "Looking for a software engineer...",
             "posted_at": "2024-03-20",
             "remote": True,
             "salary_range": "$100,000 - $150,000 per year"
@@ -29,7 +29,7 @@ def mock_job_data() -> List[Dict[str, Any]]:
             "company": "Dev Inc",
             "location": "Remote",
             "url": "/job/456",
-            "description": "Senior developer position...",
+            "summary": "Senior developer position...",
             "posted_at": "2024-03-19",
             "remote": True,
             "salary_range": "$130,000 - $180,000 per year"
@@ -95,7 +95,7 @@ def test_extract_raw_job_data(mock_driver, mock_job_data):
                     "h2 a": job_data["title"],
                     "[data-testid='companyName']": job_data["company"],
                     "[data-testid='searchSerpJobLocation']": job_data["location"],
-                    "[data-testid='searchSerpJobSnippet']": job_data["description"],
+                    "[data-testid='searchSerpJobSnippet']": job_data["summary"],
                     "[data-testid='searchSerpJobSalaryConfirmed']": job_data["salary_range"]
                 }
                 mock_result = Mock()
@@ -121,7 +121,7 @@ def test_transform_job(mock_driver, mock_job_data):
                 "h2 a": ("title", True),
                 "[data-testid='companyName']": ("company", False),
                 "[data-testid='searchSerpJobLocation']": ("location", False),
-                "[data-testid='searchSerpJobSnippet']": ("description", False),
+                "[data-testid='searchSerpJobSnippet']": ("summary", False),
                 "[data-testid='searchSerpJobSalaryConfirmed']": ("salary_range", False)
             }
             
@@ -143,7 +143,7 @@ def test_transform_job(mock_driver, mock_job_data):
         assert job.company == mock_job_data[0]["company"]
         assert job.location == mock_job_data[0]["location"]
         assert job.url == "https://www.simplyhired.com" + mock_job_data[0]["url"]
-        assert job.description == mock_job_data[0]["description"]
+        assert job.summary == mock_job_data[0]["summary"]
         assert isinstance(job.posted_at, datetime)
 
 def test_transform_job_with_invalid_data(mock_driver):
@@ -166,7 +166,7 @@ def test_fetch_jobs_integration(mock_driver, mock_query, mock_job_data):
                     "h2 a": job_data["title"],
                     "[data-testid='companyName']": job_data["company"],
                     "[data-testid='searchSerpJobLocation']": job_data["location"],
-                    "[data-testid='searchSerpJobSnippet']": job_data["description"],
+                    "[data-testid='searchSerpJobSnippet']": job_data["summary"],
                     "[data-testid='searchSerpJobSalaryConfirmed']": job_data["salary_range"]
                 }
                 mock_result = Mock()
@@ -196,7 +196,7 @@ def test_pagination_limit(mock_driver, mock_query, mock_job_data):
                     "h2 a": job_data["title"],
                     "[data-testid='companyName']": job_data["company"],
                     "[data-testid='searchSerpJobLocation']": job_data["location"],
-                    "[data-testid='searchSerpJobSnippet']": job_data["description"],
+                    "[data-testid='searchSerpJobSnippet']": job_data["summary"],
                     "[data-testid='searchSerpJobSalaryConfirmed']": job_data["salary_range"]
                 }
                 mock_result = Mock()
