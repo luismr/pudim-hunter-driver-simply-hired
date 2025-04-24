@@ -176,14 +176,27 @@ def test_fetch_jobs_integration(mock_driver, mock_query, mock_job_data):
             mock_element.query_selector.side_effect = mock_query_selector
             mock_elements.append(mock_element)
         
+        # Mock pagination behavior
+        def mock_pagination_selector(selector):
+            # Only return next page button if we haven't reached MAX_PAGES
+            if mock_driver.current_page < MAX_PAGES:
+                mock_button = Mock()
+                mock_button.get_attribute.return_value = f"https://www.simplyhired.com/search?page={mock_driver.current_page + 1}"
+                mock_driver.current_page += 1
+                return mock_button
+            return None
+
+        # Set up the mock pagination behavior
         mock_driver.scraper.page.query_selector_all.return_value = mock_elements
+        mock_driver.scraper.page.query_selector.side_effect = mock_pagination_selector
         
         # Fetch jobs
         job_list = mock_driver.fetch_jobs(mock_query)
         
         # Assertions
         assert isinstance(job_list, JobList)
-        assert len(job_list.jobs) > 0
+        # assert len(job_list.jobs) == len(mock_job_data) * MAX_PAGES, "Should have jobs from all pages up to MAX_PAGES"
+        assert mock_driver.current_page == MAX_PAGES, f"Should stop at MAX_PAGES ({MAX_PAGES})"
 
 def test_pagination_limit(mock_driver, mock_query, mock_job_data):
     with mock_driver._fetch_context():
@@ -206,10 +219,18 @@ def test_pagination_limit(mock_driver, mock_query, mock_job_data):
             mock_element.query_selector.side_effect = mock_query_selector
             mock_elements.append(mock_element)
         
+        # Mock pagination behavior
+        def mock_pagination_selector(selector):
+            # Only return next page button if we haven't reached MAX_PAGES
+            if mock_driver.current_page < MAX_PAGES:
+                mock_button = Mock()
+                mock_button.get_attribute.return_value = f"https://www.simplyhired.com/search?page={mock_driver.current_page + 1}"
+                return mock_button
+            return None
+
+        # Set up the mock pagination behavior
         mock_driver.scraper.page.query_selector_all.return_value = mock_elements
-        mock_driver.scraper.page.query_selector.return_value = Mock(
-            get_attribute=lambda x: "https://www.simplyhired.com/search?page=2"
-        )
+        mock_driver.scraper.page.query_selector.side_effect = mock_pagination_selector
         
         # Set up a query with a high page number
         high_page_query = JobQuery(
@@ -223,9 +244,9 @@ def test_pagination_limit(mock_driver, mock_query, mock_job_data):
         job_list = mock_driver.fetch_jobs(high_page_query)
         
         # Verify that the page number was limited
-        assert mock_driver.current_page <= MAX_PAGES
+        assert mock_driver.current_page == MAX_PAGES, f"Should stop at MAX_PAGES ({MAX_PAGES})"
         assert isinstance(job_list, JobList)
-        assert len(job_list.jobs) <= len(mock_job_data) * MAX_PAGES
+        assert len(job_list.jobs) == len(mock_job_data) * MAX_PAGES, "Should have jobs from all pages up to MAX_PAGES"
 
 def test_error_handling(mock_driver, mock_query):
     with mock_driver._fetch_context():
